@@ -28,7 +28,7 @@ public class SellerAgent extends Agent {
 				
 		addBehaviour(new ContractNetInitiator(this, null) {
 			
-			public Vector<ACLMessage> prepareCfps(ACLMessage cfp) {
+			public Vector<ACLMessage> prepareCFPs(ACLMessage cfp) {
 				
 				cfp = new ACLMessage(ACLMessage.CFP);
 				System.out.println("CFP SENT");
