@@ -13,6 +13,8 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 public class ServiceAgent extends Agent {
 	
 	private ArrayList<Agent> registeredAgents = new ArrayList<Agent>();
+	private double productValue = 0;
+	private boolean reserveFlag = false;
 		
 	public AID[] getAllAgents(Agent agent, DFAgentDescription description, SearchConstraints constraints){
 		
@@ -45,4 +47,20 @@ public class ServiceAgent extends Agent {
 			e.printStackTrace();
 		}
 	}
+	
+	public void setProductValue(double value){
+		this.productValue=value;
+	}
+	
+	public void reservePriceMet(double value){
+		if((value >= this.productValue) && (this.reserveFlag == false)){
+			this.reserveFlag=true;
+		}
+	}
+	
+	public boolean getReserveFlag(){
+		return this.reserveFlag;
+	}
+	
+	
 }

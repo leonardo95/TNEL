@@ -1,6 +1,7 @@
 package agents;
 
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Vector;
 
 import jade.core.AID;
@@ -48,6 +49,33 @@ public class SellerAgent extends Agent {
 				responses.addElement(cfp);
 
 				return responses;
+			}
+			
+			protected void handleAllResponses(Vector responses, Vector acceptances) {
+				
+				Enumeration e = responses.elements();
+				
+				while (e.hasMoreElements()) {
+					
+					ACLMessage msg = (ACLMessage) e.nextElement();
+					if (msg.getPerformative() == ACLMessage.PROPOSE) {
+						
+						System.out.println("PROPOSAL RECEIVED WITH VALUE - " + msg);
+						serviceAgent.reservePriceMet(Integer.parseInt(msg.getEncoding()));
+						
+						ACLMessage reply = msg.createReply();
+						reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+						
+						if(serviceAgent.getReserveFlag()){
+							System.out.println("PROPOSAL ACCEPTED WITH RESERVE PRICE MET");
+						}
+						else{
+							System.out.println("PROPOSAL ACCEPTED WITH RESERVE PRICE UNMET");
+						}
+						
+						acceptances.addElement(reply);
+					}
+				}					
 			}
 			
 			
