@@ -21,7 +21,7 @@ public class BuyerAgent extends Agent{
 			
 			@Override
 			protected ACLMessage handleCfp(ACLMessage cfp) throws NotUnderstoodException, RefuseException {
-				System.out.println("CFP " + getLocalName() + "->" + cfp.getSender().getName() + " - CONTENT: "+cfp.getContent());
+				System.out.println("CFP " + cfp.getSender().getName() + "->" + getLocalName());
 				ACLMessage ret = evaluateAction(cfp);
 				if (ret != null) {
 					return ret;

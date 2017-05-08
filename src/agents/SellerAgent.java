@@ -20,7 +20,8 @@ import jade.proto.ContractNetInitiator;
 public class SellerAgent extends Agent {
 	
 	String productName = new String();
-	double productReservePrice = 2.56;
+	double productReservePrice = 7.56;
+	boolean reservePriceMet = false;
 	
 	public void setup() {
 		Object[] args = getArguments();
@@ -34,7 +35,6 @@ public class SellerAgent extends Agent {
 			Vector<ACLMessage> responses = new Vector<ACLMessage>();
 			
 			for (int i = 0; i < args.length; ++i) {
-				System.out.println((String) args[i]);
 				cfp.addReceiver(new AID((String) args[i], AID.ISLOCALNAME));
 	  		}
 			
@@ -52,11 +52,22 @@ public class SellerAgent extends Agent {
 						ACLMessage msg = (ACLMessage) e.nextElement();
 						if (msg.getPerformative() == ACLMessage.PROPOSE) {
 							
-							System.out.println("PROPOSAL RECEIVED WITH VALUE - " + msg);
+							System.out.println("PROPOSAL RECEIVED WITH VALUE - " + msg.getContent());
 							
 							ACLMessage reply = msg.createReply();
 							reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-														
+							
+							if(Integer.parseInt(msg.getContent()) >= productReservePrice){
+								reservePriceMet=true;
+							}
+							
+							if(reservePriceMet){
+								System.out.println("RESERVE PRICE HAS BEEN MET");
+							}
+							else{
+								System.out.println("RESERVE PRICE STILL HAS NOT BEEN MET");
+							}
+							
 							acceptances.addElement(reply);
 						}
 					}					

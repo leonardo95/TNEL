@@ -26,41 +26,6 @@ public class utils {
 		else
 			return highest2nd;
 	}
-
-	public static void main(String[] args) throws StaleProxyException {
-		
-		/*int b[] = {0,10,2,4,7};
-		System.out.println(getFirstorSecondHighestValue(b, true));
-		System.out.println(getFirstorSecondHighestValue(b, false));*/
-
-		Runtime rt = Runtime.instance();
-		Profile p = new ProfileImpl();
-
-		//AMS and DF Agents 
-		ContainerController mainContainer = rt.createMainContainer(p);
-
-		//System.out.println("Registered Bidders:");
-		int totalBidders = 3;
-		
-		for (int i = 0; i < totalBidders; i++){
-			Object[] bidderArgs = new Object[1];
-			bidderArgs[0] = "bidder " + i;
-
-			mainContainer.createNewAgent("Bidder " + i, "ContractNetResponderAgent", bidderArgs).start();
-		}
-	
-		//System.out.println("Registered Auctions:");
-		Object[] auctioneerArgs = new Object[totalBidders];
-		
-		for (int i = 0; i < totalBidders; i++){
-			auctioneerArgs[i] = "Bidder " + i;
-		}
-		
-		mainContainer.createNewAgent("Auctioneer 0", "ContractNetInitiatorAgent", auctioneerArgs).start();
-		
-		AgentController gui = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", null);
-		gui.start();
-	}
 }
 
 
