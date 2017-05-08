@@ -19,66 +19,49 @@ import jade.proto.ContractNetInitiator;
 
 public class SellerAgent extends Agent {
 	
-	ServiceAgent serviceAgent = new ServiceAgent();
 	String productName = new String();
 	double productReservePrice = 2.56;
 	
 	public void setup() {
-		System.out.println("SELLER AGENT " + getLocalName() + " INITIATED");
-		System.out.println("SELLING PRODUCT WITH RESERVE PRICE " + productReservePrice);
-				
-		addBehaviour(new ContractNetInitiator(this, null) {
+		Object[] args = getArguments();
+		if (args != null && args.length > 0) {
+			System.out.println("SELLER AGENT " + getLocalName() + " INITIATED");
+			System.out.println("SELLING PRODUCT WITH RESERVE PRICE " + productReservePrice);
 			
-			public Vector<ACLMessage> prepareCFPs(ACLMessage cfp) {
-				
-				cfp = new ACLMessage(ACLMessage.CFP);
-				System.out.println("CFP SENT");
-				
-				Vector<ACLMessage> responses = new Vector<ACLMessage>();
-
-				AID[] agents = serviceAgent.getAllAgents(getAgent(), null, null);
-				
-				for(int i=0; i<agents.length; ++i){
-					System.out.println(agents[i].getName());
-					cfp.addReceiver(new AID(agents[i].getLocalName(), AID.ISLOCALNAME));
-				}
-
-				cfp.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);
-				cfp.setContent(productName);
-
-				responses.addElement(cfp);
-
-				return responses;
-			}
+			ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
+			System.out.println("CFP SENT");
 			
-			protected void handleAllResponses(Vector responses, Vector acceptances) {
+			Vector<ACLMessage> responses = new Vector<ACLMessage>();
+			
+			for (int i = 0; i < args.length; ++i) {
+				System.out.println((String) args[i]);
+				cfp.addReceiver(new AID((String) args[i], AID.ISLOCALNAME));
+	  		}
+			
+			cfp.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);
+			cfp.setContent(productName);
+			
+			addBehaviour(new ContractNetInitiator(this, cfp) {
 				
-				Enumeration e = responses.elements();
-				
-				while (e.hasMoreElements()) {
+				protected void handleAllResponses(Vector responses, Vector acceptances) {
 					
-					ACLMessage msg = (ACLMessage) e.nextElement();
-					if (msg.getPerformative() == ACLMessage.PROPOSE) {
+					Enumeration e = responses.elements();
+					
+					while (e.hasMoreElements()) {
 						
-						System.out.println("PROPOSAL RECEIVED WITH VALUE - " + msg);
-						serviceAgent.reservePriceMet(Integer.parseInt(msg.getEncoding()));
-						
-						ACLMessage reply = msg.createReply();
-						reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
-						
-						if(serviceAgent.getReserveFlag()){
-							System.out.println("PROPOSAL ACCEPTED WITH RESERVE PRICE MET");
+						ACLMessage msg = (ACLMessage) e.nextElement();
+						if (msg.getPerformative() == ACLMessage.PROPOSE) {
+							
+							System.out.println("PROPOSAL RECEIVED WITH VALUE - " + msg);
+							
+							ACLMessage reply = msg.createReply();
+							reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+														
+							acceptances.addElement(reply);
 						}
-						else{
-							System.out.println("PROPOSAL ACCEPTED WITH RESERVE PRICE UNMET");
-						}
-						
-						acceptances.addElement(reply);
-					}
-				}					
-			}
-			
-			
-		});
+					}					
+				}
+			});
+		}
 	}
 }

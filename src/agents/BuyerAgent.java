@@ -12,23 +12,12 @@ import jade.lang.acl.MessageTemplate;
 import jade.proto.ContractNetResponder;
 
 public class BuyerAgent extends Agent{
-	ServiceAgent serviceAgent = new ServiceAgent();
 	
 	public void setup() {
 		System.out.println("BUYER AGENT " + getLocalName() + " INITIATED");
 		
-		ServiceDescription service = new ServiceDescription();
-		service.setName(getLocalName());
-		
-		serviceAgent.register(this, service);
-		
-		SequentialBehaviour sequentialBehaviour = new SequentialBehaviour();
-		addBehaviour(sequentialBehaviour);
-		ParallelBehaviour parallelBehaviour = new ParallelBehaviour(ParallelBehaviour.WHEN_ALL);
-		sequentialBehaviour.addSubBehaviour(parallelBehaviour);
-		
 		MessageTemplate messageTemplate = MessageTemplate.and(MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET), MessageTemplate.MatchPerformative(ACLMessage.CFP));
-		parallelBehaviour.addSubBehaviour(new ContractNetResponder(this, messageTemplate){
+		addBehaviour(new ContractNetResponder(this, messageTemplate){
 			
 			@Override
 			protected ACLMessage handleCfp(ACLMessage cfp) throws NotUnderstoodException, RefuseException {
