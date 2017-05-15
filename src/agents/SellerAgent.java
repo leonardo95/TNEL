@@ -94,18 +94,17 @@ public class SellerAgent extends Agent {
 				globalResponses = 0;
 
 				System.out.println("\n" + "Auctionneer Side: " +  getAID().getName() + " is handling " + agentsLeft + " bids.");
-			
+
 				ACLMessage reply = new ACLMessage(ACLMessage.CFP);
 				Vector<ACLMessage> cfpVector = new Vector<ACLMessage>();
 				Vector<AID> biddersvec = new Vector<AID>();
 				Enumeration<?> e = responses.elements();
 				ArrayList<ACLMessage> responderList = new ArrayList<ACLMessage>();
-				AID lastBidder = null;
 				while (e.hasMoreElements()) {
 					ACLMessage msg = (ACLMessage) e.nextElement();
-					
+
 					if (msg.getPerformative() == ACLMessage.PROPOSE) {
-						lastBidder = msg.getSender();
+
 						NumberFormat nf = NumberFormat.getInstance();
 						double proposal = 0;
 						try {
@@ -116,7 +115,7 @@ public class SellerAgent extends Agent {
 						proposals.replace(msg.getSender(), proposal);
 						reply = msg.createReply();
 						reply.setPerformative(ACLMessage.CFP);
-						
+
 						if(proposal > productReservePrice)
 							reservePriceMet = true;
 						else{
@@ -126,30 +125,62 @@ public class SellerAgent extends Agent {
 						}
 					}
 				}
-				
-				Iterator<AID> keySetIterator = proposals.keySet().iterator(); 
-				while(keySetIterator.hasNext()){ 
-					AID key = keySetIterator.next(); 
-					System.out.println("key: " + key + " value: " + proposals.get(key)); 
-				}
+
+
 
 				System.out.println();
-				if(agentsLeft == 0)
+				if(responderList.size() == 0)
 				{
-					System.out.println("Auctionneer Side: No one wants to bid more for the product!");
-				}
-				else if(agentsLeft == 1) 
-				{
-					System.out.println("Auctionneer Side: Only one agent wants to make another bid!");
-					
-					reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-					System.out.println("Bid value: " + (Double)proposals.get(lastBidder));
-					if((Double)proposals.get(lastBidder) > productReservePrice)
-					{
-						reply.setContent(productName + "|" + (Double)proposals.get(lastBidder));
-						reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+					boolean noOne = true;
+
+					Double highest = 0.0;
+					Double highest2nd = 0.0;
+					AID winner = new AID();
+
+					Iterator<AID> keySetIterator = proposals.keySet().iterator(); 
+					while(keySetIterator.hasNext()){ 
+						AID key = keySetIterator.next(); 
+						if (proposals.get(key) != 0)
+							noOne = false;
+
+						if (proposals.get(key) >= highest) 
+						{ 
+							highest2nd = highest;
+							highest = proposals.get(key);
+							winner = key;
+						} 
+						else if (proposals.get(key) >= highest2nd)
+							highest2nd = proposals.get(key);
+
+						System.out.println("key: " + key + " value: " + proposals.get(key)); 
 					}
-					acceptances.addElement(reply);
+
+					if(noOne)
+						System.out.println("Auctionneer Side: No one wants to bid for the product!");
+					else
+					{
+						if(highest > productReservePrice)
+						{
+							if(highest2nd == 0)
+							{
+								System.out.println("The biggest bid is: " + highest + " from " + winner + ". Since he is the only that bidded, he is going to pay " + highest);
+								reply.setContent(productName + "|" + highest);
+							}
+							else
+							{
+								System.out.println("The biggest bid is: " + highest + " from " + winner + ". The winner is going to pay the second biggest bid: " + highest2nd);
+								reply.setContent(productName + "|" + highest2nd);
+							}
+							reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+						}
+						else
+						{
+							System.out.println("The Auctionneer decided not to sell the product because the product reserved price was not achieved!");
+						}
+						acceptances.addElement(reply);
+
+					}
+
 				}
 				else
 				{
@@ -157,14 +188,14 @@ public class SellerAgent extends Agent {
 						responderList.get(i).setContent(productName + "|" + reservePriceMet);
 						cfpVector.set(i, responderList.get(i));
 					}
-					
+
 					String remainingbidders = "";
 					for (int i = 0; i < biddersvec.size(); i++) {
 						remainingbidders += new String(biddersvec.get(i).getName() + " ");
 
 					}
 
-					System.out.println("The agents: " + remainingbidders + ". Proceeding to the next round.");
+					System.out.println("The agents: " + remainingbidders + " are going to proceed to the next round.");
 					System.out.println(getAID().getName() + " is issuing CFP's with a reserved price of $" + productReservePrice + ".\n");
 					newIteration(cfpVector);
 				}

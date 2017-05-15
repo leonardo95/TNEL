@@ -58,47 +58,24 @@ public class BuyerAgent extends Agent{
 
 					ACLMessage response = cfp.createReply();
 
-					if(!reservedpriceflag) {
 
-						Random rand = new Random();
-						int  n = rand.nextInt(50) + 1;
+					Random rand = new Random();
+					int  n = rand.nextInt(50) + 1;
 
-						if ((n & 1) == 0) { 
-							response.setPerformative(ACLMessage.PROPOSE);
+					if ((n & 1) == 0) { 
+						response.setPerformative(ACLMessage.PROPOSE);
 
-							Random rand2 = new Random();
-							double randomValue = 4 + (10 - 4) * rand2.nextDouble();
-							String bid = String.format( "%.2f", randomValue);
-							System.out.println("Bidder Side: " + getAgent().getLocalName() + " is going to bid: " + bid);
+						Random rand2 = new Random();
+						double randomValue = 4 + (10 - 4) * rand2.nextDouble();
+						String bid = String.format( "%.2f", randomValue);
+						System.out.println("Bidder Side: " + getAgent().getLocalName() + " is going to bid: " + bid);
 
-							response.setContent(String.valueOf(bid)); 
-						} 
-						else { 
+						response.setContent(String.valueOf(bid)); 
+					} 
+					else { 
 
-							System.out.println("Bidder Side: " + getAgent().getLocalName() + " is not going to bid!");
-							response.setPerformative(ACLMessage.REFUSE);
-						}
-					}
-					else
-					{
-						Random rand = new Random();
-						int  n = rand.nextInt(50) + 1;
-
-						if ((n & 1) == 1) { 
-							response.setPerformative(ACLMessage.PROPOSE);
-
-							Random rand2 = new Random();
-							double randomValue = 4 + (10 - 4) * rand2.nextDouble();
-							String bid = String.format( "%.2f", randomValue);
-							System.out.println("Bidder Side: " + getAgent().getLocalName() + " is going to bid: " + bid);
-
-							response.setContent(String.valueOf(bid)); 
-						} 
-						else { 
-
-							System.out.println("Bidder Side: " + getAgent().getLocalName() + " is not going to bid!");
-							response.setPerformative(ACLMessage.REFUSE);
-						}
+						System.out.println("Bidder Side: " + getAgent().getLocalName() + " is not going to bid!");
+						response.setPerformative(ACLMessage.REFUSE);
 					}
 
 					return response;
@@ -116,8 +93,8 @@ public class BuyerAgent extends Agent{
 							cost = Double.parseDouble(accept.getContent().substring(accept.getContent().lastIndexOf("|") + 1));
 						} catch (Exception e) {}
 
-						System.out.println("Bidder Side: " + getAID().getName() + " has accepted the job: \"" + productName + "\" from "
-								+ accept.getSender().getName() + ", and will receive $" + cost + " for completing it.");
+						System.out.println("Bidder Side: " + getAID().getName() + " won the auction: \"" + productName + "\" from "
+								+ accept.getSender().getName() + ", and will pay $" + cost + " to acquire it.");
 						ACLMessage inform = accept.createReply();
 						inform.setPerformative(ACLMessage.INFORM);
 						return inform;
