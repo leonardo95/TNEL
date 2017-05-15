@@ -15,7 +15,7 @@ import jade.proto.SSResponderDispatcher;
 public class BuyerAgent extends Agent{
 
 	private static final long serialVersionUID = 1L;
-	
+
 	protected void setup() {
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
