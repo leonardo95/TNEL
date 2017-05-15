@@ -15,10 +15,7 @@ import jade.proto.SSResponderDispatcher;
 public class BuyerAgent extends Agent{
 
 	private static final long serialVersionUID = 1L;
-	/**
-	 * Registers the agent with the Directory Facilitator as a Carrier, 
-	 * and prepares the agent for an incoming message.
-	 */
+	
 	protected void setup() {
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
@@ -40,19 +37,14 @@ public class BuyerAgent extends Agent{
 		protected Behaviour createResponder(ACLMessage message) {
 			return new SSIteratedContractNetResponder(myAgent, message) {
 
-				/**
-				 * Responds to the CFP message from the initiator with either a PROPOSE/REFUSE message.
-				 * If the payment is too low for the agent, it declines with a REFUSE message, 
-				 * otherwise, the agent will respond with a PROPOSE message.
-				 */
 				protected ACLMessage handleCfp(ACLMessage cfp) {
-					System.out.println("Bidder Side: " + getAID().getName() + " received a cfp!");
+					System.out.println("Bidder Side: " + getAID().getLocalName()+ " received a cfp!");
 					boolean reservedpriceflag = true;
 					try {
 						reservedpriceflag = Boolean.parseBoolean((cfp.getContent().substring(cfp.getContent().lastIndexOf("|") + 1)));
 
 					} catch (Exception e) {
-						System.out.println("Bidder Side: " + getAID().getName() + " couldn't read the price.");
+						System.out.println("Bidder Side: " + getAID().getLocalName() + " couldn't read the price.");
 					}
 					//System.out.println(reservedpriceflag);
 
@@ -81,9 +73,6 @@ public class BuyerAgent extends Agent{
 					return response;
 				}
 
-				/**
-				 * The agent received an ACCEPT_PROPOSAL message, so it won the auction.
-				 */
 				protected ACLMessage handleAcceptProposal(ACLMessage msg, ACLMessage propose, ACLMessage accept) {
 					if (msg != null) {
 						String productName = null;
@@ -93,8 +82,8 @@ public class BuyerAgent extends Agent{
 							cost = Double.parseDouble(accept.getContent().substring(accept.getContent().lastIndexOf("|") + 1));
 						} catch (Exception e) {}
 
-						System.out.println("Bidder Side: " + getAID().getName() + " won the auction: \"" + productName + "\" from "
-								+ accept.getSender().getName() + ", and will pay $" + cost + " to acquire it.");
+						System.out.println("Bidder Side: " + getAID().getLocalName() + " won the auction: \"" + productName + "\" from "
+								+ accept.getSender().getLocalName() + ", and will pay $" + cost + " to acquire it.");
 						ACLMessage inform = accept.createReply();
 						inform.setPerformative(ACLMessage.INFORM);
 						return inform;
@@ -106,7 +95,7 @@ public class BuyerAgent extends Agent{
 				}
 
 				protected void handleRejectProposal(ACLMessage msg, ACLMessage propose, ACLMessage reject) {
-					System.out.println("Bidder Side: " + getAID().getName() + " can't win auction because the value offered is lower than the reserved price!");
+					System.out.println("Bidder Side: " + getAID().getLocalName() + " can't win auction because the value offered is lower than the reserved price!");
 				}
 			};
 		}

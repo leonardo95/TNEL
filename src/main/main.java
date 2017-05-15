@@ -33,7 +33,7 @@ public class main {
 			auctioneerArgs[i] = "Bidder" + i;
 		}
 		
-		mainContainer.createNewAgent("S1", "agents.SellerAgent", auctioneerArgs).start();
+		mainContainer.createNewAgent("Auction", "agents.SellerAgent", auctioneerArgs).start();
 		
 
 		for (int i = 0; i < totalBidders; i++){

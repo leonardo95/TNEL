@@ -25,6 +25,8 @@ public class SellerAgent extends Agent {
 	private static final long serialVersionUID = 1L;
 	String productName = new String("panela");
 	double productReservePrice = 7.56;
+	double highestProposal = 0.0;
+	ACLMessage winnerAuction = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 	boolean reservePriceMet = false;
 
 	private ArrayList<String> agents = new ArrayList<String>();
@@ -44,7 +46,6 @@ public class SellerAgent extends Agent {
 
 		addBehaviour(new ContractNetInitiator(this, null) {
 			private int globalResponses = 0;
-			private int rounds = 0;
 
 			public Vector<ACLMessage> prepareCfps(ACLMessage init) {
 				init = new ACLMessage(ACLMessage.CFP);
@@ -59,8 +60,9 @@ public class SellerAgent extends Agent {
 				}
 				System.out.println();
 				System.out.println();
-				System.out.println("Round: " + rounds);
-
+				System.out.println("Round: " + utils.utils.rounds);
+				System.out.println();
+				
 				init.setProtocol(FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET);
 				init.setReplyByDate(new Date(System.currentTimeMillis() + 10000));
 				init.setContent(productName + "|" + reservePriceMet);
@@ -71,30 +73,54 @@ public class SellerAgent extends Agent {
 			}
 
 			protected void handlePropose(ACLMessage propose, Vector v) {
-				System.out.println("Auctionneer Side: " + propose.getSender().getName() + " proposes $" + propose.getContent() + " for the product: \"" + productName + "\".");
+				System.out.println("Auctionneer Side: " + propose.getSender().getLocalName()  + " proposes $" + propose.getContent() + " for the product: \"" + productName + "\".");
 			}
 
 			protected void handleRefuse(ACLMessage refuse) {
 				globalResponses++;
-				System.out.println("Auctionneer Side: " + refuse.getSender().getName() + " decided he won't bid!");
+				System.out.println("Auctionneer Side: " + refuse.getSender().getLocalName() + " decided he won't bid!");
 			}
 
 			protected void handleFailure(ACLMessage failure) {
 				globalResponses++;
-				System.out.println("Auctionneer Side: " + failure.getSender().getName() + " failed to reply.");
+				System.out.println("Auctionneer Side: " + failure.getSender().getLocalName()  + " failed to reply.");
 			}
 
 			protected void handleInform(ACLMessage inform) {
 				globalResponses++;
-				System.out.println("\n" + getAID().getName() + " has sold the product!");
+				System.out.println("\n" + getAID().getLocalName() + " has sold the product!");
 			}
 
 			protected void handleAllResponses(Vector responses, Vector acceptances) {
+		
 				int agentsLeft = responses.size() - globalResponses;
 				globalResponses = 0;
 
-				System.out.println("\n" + "Auctionneer Side: " +  getAID().getName() + " is handling " + agentsLeft + " bids.");
+				System.out.println("\n" + "Auctionneer Side: " +  getAID().getLocalName() + " is handling " + agentsLeft + " bids.");
 
+				//System.out.println(responses.size());
+				Enumeration<?> t = responses.elements();
+			
+				while (t.hasMoreElements()) {
+					ACLMessage msg = (ACLMessage) t.nextElement();
+
+					if (msg.getPerformative() == ACLMessage.PROPOSE) {
+
+						NumberFormat nf = NumberFormat.getInstance();
+						double proposal = 0;
+						try {
+							proposal = nf.parse(msg.getContent()).doubleValue();
+						} catch (ParseException e1) {
+							e1.printStackTrace();
+						}
+						if(proposal > highestProposal)
+						{
+							highestProposal = proposal;
+							winnerAuction = msg;
+						}
+					}
+				}
+				
 				ACLMessage reply = new ACLMessage(ACLMessage.CFP);
 				Vector<ACLMessage> cfpVector = new Vector<ACLMessage>();
 				Vector<AID> biddersvec = new Vector<AID>();
@@ -113,8 +139,15 @@ public class SellerAgent extends Agent {
 							e1.printStackTrace();
 						}
 						proposals.replace(msg.getSender(), proposal);
-						reply = msg.createReply();
-						reply.setPerformative(ACLMessage.CFP);
+
+						if(winnerAuction == msg){
+							System.out.println("The Bidder with the highest bid is "+ msg.getSender().getLocalName() + " with value " + highestProposal);
+						}
+						else
+						{
+							reply = msg.createReply();
+							reply.setPerformative(ACLMessage.CFP);
+						}
 
 						if(proposal > productReservePrice)
 							reservePriceMet = true;
@@ -126,7 +159,13 @@ public class SellerAgent extends Agent {
 					}
 				}
 
-
+				Iterator<AID> keySetIterator2 = proposals.keySet().iterator(); 
+				while(keySetIterator2.hasNext()){ 
+					AID key = keySetIterator2.next(); 
+					
+					System.out.println("key: " + key + " value: " + proposals.get(key)); 
+				}
+				//System.out.println(reply);
 
 				System.out.println();
 				if(responderList.size() == 0)
@@ -152,32 +191,38 @@ public class SellerAgent extends Agent {
 						else if (proposals.get(key) >= highest2nd)
 							highest2nd = proposals.get(key);
 
-						System.out.println("key: " + key + " value: " + proposals.get(key)); 
+						//System.out.println("key: " + key + " value: " + proposals.get(key)); 
 					}
 
 					if(noOne)
 						System.out.println("Auctionneer Side: No one wants to bid for the product!");
 					else
 					{
+						System.out.println();
 						if(highest > productReservePrice)
 						{
+							reply = winnerAuction.createReply();
+							reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+
 							if(highest2nd == 0)
 							{
 								System.out.println("The biggest bid is: " + highest + " from " + winner + ". Since he is the only that bidded, he is going to pay " + highest);
-								reply.setContent(productName + "|" + highest);
+								reply.setContent(productName + "|" + (Double) highest);
 							}
 							else
 							{
 								System.out.println("The biggest bid is: " + highest + " from " + winner + ". The winner is going to pay the second biggest bid: " + highest2nd);
-								reply.setContent(productName + "|" + highest2nd);
+								reply.setContent(productName + "|" + (Double) highest2nd);
 							}
-							reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+
+							reply.setReplyByDate(new Date(System.currentTimeMillis() + 20000));
+							//System.out.println(reply);
+							acceptances.addElement(reply);
 						}
 						else
 						{
 							System.out.println("The Auctionneer decided not to sell the product because the product reserved price was not achieved!");
 						}
-						acceptances.addElement(reply);
 
 					}
 
@@ -191,13 +236,19 @@ public class SellerAgent extends Agent {
 
 					String remainingbidders = "";
 					for (int i = 0; i < biddersvec.size(); i++) {
-						remainingbidders += new String(biddersvec.get(i).getName() + " ");
+						remainingbidders += new String(biddersvec.get(i).getLocalName() + " ");
 
 					}
 
 					System.out.println("The agents: " + remainingbidders + " are going to proceed to the next round.");
-					System.out.println(getAID().getName() + " is issuing CFP's with a reserved price of $" + productReservePrice + ".\n");
+					System.out.println(getAID().getLocalName() + " is issuing CFP's with a reserved price of $" + productReservePrice + ".\n");
 					newIteration(cfpVector);
+					utils.utils.rounds++;
+					
+					if(utils.utils.rounds != 0)
+						System.out.println("Round: " + utils.utils.rounds);
+					System.out.println();
+					
 				}
 			}
 		});
