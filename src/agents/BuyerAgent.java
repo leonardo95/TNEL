@@ -15,7 +15,7 @@ import jade.proto.SSResponderDispatcher;
 public class BuyerAgent extends Agent{
 
 	private static final long serialVersionUID = 1L;
-
+	
 	protected void setup() {
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
@@ -49,8 +49,8 @@ public class BuyerAgent extends Agent{
 					//System.out.println(reservedpriceflag);
 
 					ACLMessage response = cfp.createReply();
-
-
+					
+					doWait(2000);
 					Random rand = new Random();
 					int  n = rand.nextInt(50) + 1;
 

@@ -19,6 +19,7 @@ import jade.core.Agent;
 import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
+import jade.wrapper.StaleProxyException;
 
 public class SellerAgent extends Agent {
 
@@ -51,6 +52,7 @@ public class SellerAgent extends Agent {
 				init = new ACLMessage(ACLMessage.CFP);
 				Vector<ACLMessage> messages = new Vector<ACLMessage>();
 
+				doWait(3000);
 				System.out.println("The Auction found the following agents:");
 				for (int i = 0; i < agents.size(); i++) {
 					System.out.print(agents.get(i).toString() + " ");
@@ -58,11 +60,15 @@ public class SellerAgent extends Agent {
 					proposals.put(agent, (double) 0);
 					init.addReceiver(agent);
 				}
+
+				doWait(2000);
+				
 				System.out.println();
 				System.out.println();
 				System.out.println("Round: " + utils.utils.rounds);
 				System.out.println();
-
+				
+				
 				init.setProtocol(FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET);
 				init.setReplyByDate(new Date(System.currentTimeMillis() + 10000));
 				init.setContent(productName + "|" + reservePriceMet);
@@ -89,18 +95,24 @@ public class SellerAgent extends Agent {
 			protected void handleInform(ACLMessage inform) {
 				globalResponses++;
 				System.out.println("\n" + getAID().getLocalName() + " has sold the product!");
+				try {
+					utils.utils.gui.kill();
+				} catch (StaleProxyException e) {
+					e.printStackTrace();
+				}
 			}
 
 			protected void handleAllResponses(Vector responses, Vector acceptances) {
-
+		
 				int agentsLeft = responses.size() - globalResponses;
 				globalResponses = 0;
 
 				System.out.println("\n" + "Auctionneer Side: " +  getAID().getLocalName() + " is handling " + agentsLeft + " bids.");
 
 				//System.out.println(responses.size());
+				doWait(2000);
 				Enumeration<?> t = responses.elements();
-
+			
 				while (t.hasMoreElements()) {
 					ACLMessage msg = (ACLMessage) t.nextElement();
 
@@ -120,7 +132,7 @@ public class SellerAgent extends Agent {
 						}
 					}
 				}
-
+				
 				ACLMessage reply = new ACLMessage(ACLMessage.CFP);
 				Vector<ACLMessage> cfpVector = new Vector<ACLMessage>();
 				Vector<AID> biddersvec = new Vector<AID>();
@@ -162,7 +174,7 @@ public class SellerAgent extends Agent {
 				Iterator<AID> keySetIterator2 = proposals.keySet().iterator(); 
 				while(keySetIterator2.hasNext()){ 
 					AID key = keySetIterator2.next(); 
-
+					
 					System.out.println("key: " + key + " value: " + proposals.get(key)); 
 				}
 				//System.out.println(reply);
@@ -244,11 +256,11 @@ public class SellerAgent extends Agent {
 					System.out.println(getAID().getLocalName() + " is issuing CFP's with a reserved price of $" + productReservePrice + ".\n");
 					newIteration(cfpVector);
 					utils.utils.rounds++;
-
+					
 					if(utils.utils.rounds != 0)
 						System.out.println("Round: " + utils.utils.rounds);
 					System.out.println();
-
+					
 				}
 			}
 		});

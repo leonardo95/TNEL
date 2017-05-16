@@ -10,6 +10,7 @@ import jade.wrapper.StaleProxyException;
 public class utils {
 	
 	public static int rounds = 0;
+	public static AgentController gui;
 
 	public static int getFirstorSecondHighestValue(int[] proposals, boolean first)
 	{

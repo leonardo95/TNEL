@@ -33,7 +33,7 @@ public class main {
 			auctioneerArgs[i] = "Bidder" + i;
 		}
 		
-		mainContainer.createNewAgent("VickreyAuction", "agents.SellerAgent", auctioneerArgs).start();
+		mainContainer.createNewAgent("Auction", "agents.SellerAgent", auctioneerArgs).start();
 		
 
 		for (int i = 0; i < totalBidders; i++){
@@ -43,7 +43,7 @@ public class main {
 			mainContainer.createNewAgent("Bidder" + i, "agents.BuyerAgent", bidderArgs).start();
 		}
 		
-		AgentController gui = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", null);
-		gui.start();
+		utils.gui = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", null);
+		utils.gui.start();
 	}
 }
