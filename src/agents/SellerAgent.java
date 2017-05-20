@@ -24,7 +24,7 @@ import jade.wrapper.StaleProxyException;
 public class SellerAgent extends Agent {
 
 	private static final long serialVersionUID = 1L;
-	String productName = new String("panela");
+	String productName = new String("iogurte");
 	double productReservePrice = 7.56;
 	double highestProposal = 0.0;
 	ACLMessage winnerAuction = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
@@ -34,12 +34,12 @@ public class SellerAgent extends Agent {
 	private HashMap<AID, Double> proposals = new LinkedHashMap<AID, Double>();
 
 	protected void setup() {
-		System.out.println(new String("Let's start the Vickrey Auction!!").toUpperCase());
+		System.out.println(new String("GSP Auction Mechanism in Sales").toUpperCase());
 		System.out.println();
 
 		Object[] args = getArguments();
 		if(args.length == 0)
-			System.out.println("No bidders on the auction!!");
+			System.out.println("No bidders in the auction");
 		else {
 			for (int i = 0; i < args.length; i++)
 				agents.add((String)args[i]);
@@ -53,7 +53,7 @@ public class SellerAgent extends Agent {
 				Vector<ACLMessage> messages = new Vector<ACLMessage>();
 
 				doWait(3000);
-				System.out.println("The Auction found the following agents:");
+				System.out.print("Auction founded with the following agents: ");
 				for (int i = 0; i < agents.size(); i++) {
 					System.out.print(agents.get(i).toString() + " ");
 					AID agent = new AID((String) agents.get(i), AID.ISLOCALNAME);
@@ -65,9 +65,11 @@ public class SellerAgent extends Agent {
 				
 				System.out.println();
 				System.out.println();
-				System.out.println("Round: " + utils.utils.rounds);
+				System.out.println("Starting Round: " + utils.utils.rounds);
 				System.out.println();
 				
+				System.out.println("AUCTIONEER: Sending CFP");
+				System.out.println();
 				
 				init.setProtocol(FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET);
 				init.setReplyByDate(new Date(System.currentTimeMillis() + 10000));
@@ -79,17 +81,18 @@ public class SellerAgent extends Agent {
 			}
 
 			protected void handlePropose(ACLMessage propose, Vector v) {
-				System.out.println("Auctionneer Side: " + propose.getSender().getLocalName()  + " proposes $" + propose.getContent() + " for the product: \"" + productName + "\".");
+				System.out.println("AUTIONEER: " + propose.getSender().getLocalName()  + " proposes " + propose.getContent() + "$ for the product: \"" + productName + "\".");
 			}
 
 			protected void handleRefuse(ACLMessage refuse) {
 				globalResponses++;
-				System.out.println("Auctionneer Side: " + refuse.getSender().getLocalName() + " decided he won't bid!");
+				System.out.println();
+				System.out.println("AUCTIONEER: " + refuse.getSender().getLocalName() + " refused to bid on the product");
 			}
 
 			protected void handleFailure(ACLMessage failure) {
 				globalResponses++;
-				System.out.println("Auctionneer Side: " + failure.getSender().getLocalName()  + " failed to reply.");
+				System.out.println("AUTIONEER: " + failure.getSender().getLocalName()  + " failed to reply.");
 			}
 
 			protected void handleInform(ACLMessage inform) {
@@ -107,7 +110,7 @@ public class SellerAgent extends Agent {
 				int agentsLeft = responses.size() - globalResponses;
 				globalResponses = 0;
 
-				System.out.println("\n" + "Auctionneer Side: " +  getAID().getLocalName() + " is handling " + agentsLeft + " bids.");
+				System.out.println("\n" + "AUTIONEER: " +  getAID().getLocalName() + " is handling " + agentsLeft + " bids. \n");
 
 				//System.out.println(responses.size());
 				doWait(2000);
@@ -153,7 +156,7 @@ public class SellerAgent extends Agent {
 						proposals.replace(msg.getSender(), proposal);
 
 						if(winnerAuction == msg){
-							System.out.println("The Bidder with the highest bid is "+ msg.getSender().getLocalName() + " with value " + highestProposal);
+							System.out.println("AUTIONEER: the bidder with the highest bid is "+ msg.getSender().getLocalName() + " with value " + highestProposal + "\n");
 						}
 						else
 						{
@@ -252,7 +255,7 @@ public class SellerAgent extends Agent {
 
 					}
 
-					System.out.println("The agents: " + remainingbidders + " are going to proceed to the next round.");
+					System.out.println("The agents: " + remainingbidders + " are going to proceed to the next round. \n");
 					System.out.println(getAID().getLocalName() + " is issuing CFP's with a reserved price of $" + productReservePrice + ".\n");
 					newIteration(cfpVector);
 					utils.utils.rounds++;

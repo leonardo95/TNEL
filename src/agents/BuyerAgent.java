@@ -38,16 +38,17 @@ public class BuyerAgent extends Agent{
 			return new SSIteratedContractNetResponder(myAgent, message) {
 
 				protected ACLMessage handleCfp(ACLMessage cfp) {
-					System.out.println("Bidder Side: " + getAID().getLocalName()+ " received a cfp!");
+					System.out.println("BIDDER: " + getAID().getLocalName()+ " received CFP");
 					boolean reservedpriceflag = true;
 					try {
 						reservedpriceflag = Boolean.parseBoolean((cfp.getContent().substring(cfp.getContent().lastIndexOf("|") + 1)));
 
 					} catch (Exception e) {
-						System.out.println("Bidder Side: " + getAID().getLocalName() + " couldn't read the price.");
+						System.out.println("BIDDER: " + getAID().getLocalName() + " unable to read product price.");
 					}
 					//System.out.println(reservedpriceflag);
-
+					
+					
 					ACLMessage response = cfp.createReply();
 					
 					doWait(2000);
@@ -60,13 +61,13 @@ public class BuyerAgent extends Agent{
 						Random rand2 = new Random();
 						double randomValue = 4 + (10 - 4) * rand2.nextDouble();
 						String bid = String.format( "%.2f", randomValue);
-						System.out.println("Bidder Side: " + getAgent().getLocalName() + " is going to bid: " + bid);
+
+						System.out.println("BIDDER: " + getAgent().getLocalName() + " will bid " + bid);
 
 						response.setContent(String.valueOf(bid)); 
 					} 
 					else { 
-
-						System.out.println("Bidder Side: " + getAgent().getLocalName() + " is not going to bid!");
+						System.out.println("BIDDER: " + getAgent().getLocalName() + " decided not to bid on the product");
 						response.setPerformative(ACLMessage.REFUSE);
 					}
 
