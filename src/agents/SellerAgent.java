@@ -24,8 +24,8 @@ import jade.wrapper.StaleProxyException;
 public class SellerAgent extends Agent {
 
 	private static final long serialVersionUID = 1L;
-	String productName = new String("iogurte");
-	double productReservePrice = 7.56;
+	String productName = new String();
+	double productReservePrice;
 	double highestProposal = 0.0;
 	ACLMessage winnerAuction = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 	boolean reservePriceMet = false;
@@ -38,13 +38,16 @@ public class SellerAgent extends Agent {
 		System.out.println();
 
 		Object[] args = getArguments();
-		if(args.length == 0)
+		productName = (String) args[0];
+		productReservePrice = Double.parseDouble((String) args[1]);
+		
+		if(args.length <= 2)
 			System.out.println("No bidders in the auction");
 		else {
-			for (int i = 0; i < args.length; i++)
+			for (int i = 2; i < args.length; i++)
 				agents.add((String)args[i]);
 		}
-
+		
 		addBehaviour(new ContractNetInitiator(this, null) {
 			private int globalResponses = 0;
 
@@ -210,7 +213,7 @@ public class SellerAgent extends Agent {
 					}
 
 					if(noOne)
-						System.out.println("Auctionneer Side: No one wants to bid for the product!");
+						System.out.println("AUCTIONEER: No obids for the product were made");
 					else
 					{
 						System.out.println();
@@ -221,12 +224,12 @@ public class SellerAgent extends Agent {
 
 							if(highest2nd == 0)
 							{
-								System.out.println("The biggest bid is: " + highest + " from " + winner + ". Since he is the only that bidded, he is going to pay " + highest);
+								System.out.println("The highest bid is: " + highest + " from " + winner + ". Since he is the only that bidded, he is going to pay " + highest);
 								reply.setContent(productName + "|" + (Double) highest);
 							}
 							else
 							{
-								System.out.println("The biggest bid is: " + highest + " from " + winner + ". The winner is going to pay the second biggest bid: " + highest2nd);
+								System.out.println("The highest bid is: " + highest + " from " + winner + ". The winner is going to pay the second biggest bid: " + highest2nd);
 								reply.setContent(productName + "|" + (Double) highest2nd);
 							}
 
