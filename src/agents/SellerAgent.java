@@ -20,45 +20,51 @@ import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.proto.ContractNetInitiator;
 import jade.wrapper.StaleProxyException;
+import utils.Logs;
 
 public class SellerAgent extends Agent {
-
-	private static final long serialVersionUID = 1L;
-	String productName = new String();
+	
 	double productReservePrice;
 	double highestProposal = 0.0;
-	ACLMessage winnerAuction = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 	boolean reservePriceMet = false;
+	private static final long serialVersionUID = 1L;
+	String productName = new String();
+	ACLMessage winnerAuction = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+	Logs log = new Logs();
 
 	private ArrayList<String> agents = new ArrayList<String>();
 	private HashMap<AID, Double> proposals = new LinkedHashMap<AID, Double>();
 
+	//FIPA Iterated Contract Net Protocol Setup
 	protected void setup() {
-		System.out.println(new String("GSP Auction Mechanism in Sales").toUpperCase());
-		System.out.println();
+		log.autionHeader();
 
 		Object[] args = getArguments();
 		productName = (String) args[0];
 		productReservePrice = Double.parseDouble((String) args[1]);
 		
 		if(args.length <= 2)
-			System.out.println("No bidders in the auction");
+			log.noBiddersInAuction();
 		else {
 			for (int i = 2; i < args.length; i++)
 				agents.add((String)args[i]);
 		}
 		
+		//FIPA Iterated Contract Net Protocol Behaviour
 		addBehaviour(new ContractNetInitiator(this, null) {
 			private int globalResponses = 0;
 
+			//FIPA Iterated Contract Net Protocol PrepareCFPs
 			public Vector<ACLMessage> prepareCfps(ACLMessage init) {
 				init = new ACLMessage(ACLMessage.CFP);
 				Vector<ACLMessage> messages = new Vector<ACLMessage>();
 
 				doWait(3000);
-				System.out.print("Auction founded with the following agents: ");
+				
+				log.listBidders(agents);
+				
+				//Initiating the BDI Bidder Agents
 				for (int i = 0; i < agents.size(); i++) {
-					System.out.print(agents.get(i).toString() + " ");
 					AID agent = new AID((String) agents.get(i), AID.ISLOCALNAME);
 					proposals.put(agent, (double) 0);
 					init.addReceiver(agent);
@@ -66,14 +72,10 @@ public class SellerAgent extends Agent {
 
 				doWait(2000);
 				
-				System.out.println();
-				System.out.println();
-				System.out.println("Starting Round: " + utils.utils.rounds);
-				System.out.println();
+				log.startingRound(utils.Utils.rounds);
+				log.sendingCFP();
 				
-				System.out.println("AUCTIONEER: Sending CFP");
-				System.out.println();
-				
+				//Sending CFP
 				init.setProtocol(FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET);
 				init.setReplyByDate(new Date(System.currentTimeMillis() + 10000));
 				init.setContent(productName + "|" + reservePriceMet);
@@ -82,43 +84,49 @@ public class SellerAgent extends Agent {
 
 				return messages;
 			}
-
+			
+			//FIPA Iterated Contract Net Protocol HandlePropose
 			protected void handlePropose(ACLMessage propose, Vector v) {
-				System.out.println("AUTIONEER: " + propose.getSender().getLocalName()  + " proposes " + propose.getContent() + "$ for the product: \"" + productName + "\".");
+				log.handlePropose(propose.getSender().getLocalName(), propose.getContent(), productName);
 			}
-
+			
+			//FIPA Iterated Contract Net Protocol HandleRefuse
 			protected void handleRefuse(ACLMessage refuse) {
 				globalResponses++;
-				System.out.println();
-				System.out.println("AUCTIONEER: " + refuse.getSender().getLocalName() + " refused to bid on the product");
+				log.handleRefuse(refuse.getSender().getLocalName());
 			}
-
+			
+			//FIPA Iterated Contract Net Protocol HandleFaliure
 			protected void handleFailure(ACLMessage failure) {
 				globalResponses++;
-				System.out.println("AUTIONEER: " + failure.getSender().getLocalName()  + " failed to reply.");
+				log.handleFaliure(failure.getSender().getLocalName());
 			}
-
+			
+			//FIPA Iterated Contract Net Protocol HandleInform
 			protected void handleInform(ACLMessage inform) {
 				globalResponses++;
-				System.out.println("\n" + getAID().getLocalName() + " has sold the product!");
+				log.handleInform(getAID().getLocalName() );
+				
+				//Auction GUI Termination
 				try {
-					utils.utils.gui.kill();
+					utils.Utils.gui.kill();
 				} catch (StaleProxyException e) {
 					e.printStackTrace();
 				}
 			}
-
+			
+			//FIPA Iterated Contract Net Protocol HandleAllResponses
 			protected void handleAllResponses(Vector responses, Vector acceptances) {
 		
 				int agentsLeft = responses.size() - globalResponses;
 				globalResponses = 0;
+				
+				log.handlingBids(getAID().getLocalName(), agentsLeft);
 
-				System.out.println("\n" + "AUTIONEER: " +  getAID().getLocalName() + " is handling " + agentsLeft + " bids. \n");
-
-				//System.out.println(responses.size());
 				doWait(2000);
+				
+				//Proposals verification
 				Enumeration<?> t = responses.elements();
-			
 				while (t.hasMoreElements()) {
 					ACLMessage msg = (ACLMessage) t.nextElement();
 
@@ -139,11 +147,13 @@ public class SellerAgent extends Agent {
 					}
 				}
 				
+				//CFP for the new round
 				ACLMessage reply = new ACLMessage(ACLMessage.CFP);
 				Vector<ACLMessage> cfpVector = new Vector<ACLMessage>();
 				Vector<AID> biddersvec = new Vector<AID>();
 				Enumeration<?> e = responses.elements();
 				ArrayList<ACLMessage> responderList = new ArrayList<ACLMessage>();
+				
 				while (e.hasMoreElements()) {
 					ACLMessage msg = (ACLMessage) e.nextElement();
 
@@ -159,7 +169,7 @@ public class SellerAgent extends Agent {
 						proposals.replace(msg.getSender(), proposal);
 
 						if(winnerAuction == msg){
-							System.out.println("AUTIONEER: the bidder with the highest bid is "+ msg.getSender().getLocalName() + " with value " + highestProposal + "\n");
+							log.highestBid(msg.getSender().getLocalName(), highestProposal);
 						}
 						else
 						{
@@ -176,14 +186,13 @@ public class SellerAgent extends Agent {
 						}
 					}
 				}
-
+				
+				//Proposal Listing
 				Iterator<AID> keySetIterator2 = proposals.keySet().iterator(); 
 				while(keySetIterator2.hasNext()){ 
 					AID key = keySetIterator2.next(); 
-					
-					System.out.println("Name: " + key.getLocalName() + " with value - " + proposals.get(key)); 
+					log.proposalListing(key.getLocalName(), proposals.get(key));
 				}
-				//System.out.println(reply);
 
 				System.out.println();
 				if(responderList.size() == 0)
@@ -209,13 +218,13 @@ public class SellerAgent extends Agent {
 						else if (proposals.get(key) >= highest2nd)
 							highest2nd = proposals.get(key);
 
-						//System.out.println("key: " + key + " value: " + proposals.get(key)); 
 					}
 
 					if(noOne)
-						System.out.println("AUCTIONEER: No bids for the product were made");
+						log.noBidsWereMade();
 					else
 					{
+						//Winner Accept Proposal
 						System.out.println();
 						if(highest > productReservePrice)
 						{
@@ -224,29 +233,27 @@ public class SellerAgent extends Agent {
 
 							if(highest2nd == 0)
 							{
-								System.out.println("The highest bid is: " + highest + " from " + winner.getLocalName() + ". Since he is the only that bidded, he is going to pay " + highest);
+								log.winner(0, highest, winner.getLocalName(), highest2nd);
 								reply.setContent(productName + "|" + (Double) highest);
 							}
 							else
 							{
-								System.out.println("The highest bid is: " + highest + " from " + winner.getLocalName() + ". The winner is going to pay the second biggest bid: " + highest2nd);
+								log.winner(1, highest, winner.getLocalName(), highest2nd);
 								reply.setContent(productName + "|" + (Double) highest2nd);
 							}
 
 							reply.setReplyByDate(new Date(System.currentTimeMillis() + 20000));
-							//System.out.println(reply);
 							acceptances.addElement(reply);
 						}
 						else
 						{
-							System.out.println("The Auctionneer decided not to sell the product because the product reserved price was not achieved!");
+							log.reservePriceNotMet();
 						}
-
 					}
-
 				}
 				else
 				{
+					//Issuing a new CFP
 					for (int i = 0; i < responderList.size(); i++) {
 						responderList.get(i).setContent(productName + "|" + reservePriceMet);
 						cfpVector.set(i, responderList.get(i));
@@ -257,15 +264,12 @@ public class SellerAgent extends Agent {
 						remainingbidders += new String(biddersvec.get(i).getLocalName() + " ");
 
 					}
-
-					System.out.println("The agents: " + remainingbidders + " are going to proceed to the next round. \n");
-					System.out.println(getAID().getLocalName() + " is issuing CFP's with a reserved price of $" + productReservePrice + ".\n");
+					log.proceedToNextRound(getAID().getLocalName(), remainingbidders, productReservePrice);
 					newIteration(cfpVector);
-					utils.utils.rounds++;
+					utils.Utils.rounds++;
 					
-					if(utils.utils.rounds != 0)
-						System.out.println("Round: " + utils.utils.rounds);
-					System.out.println();
+					if(utils.Utils.rounds != 0)
+						log.roundUpdate(utils.Utils.rounds);
 					
 				}
 			}
