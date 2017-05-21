@@ -11,11 +11,14 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.SSIteratedContractNetResponder;
 import jade.proto.SSResponderDispatcher;
+import utils.Logs;
 
 public class BuyerAgent extends Agent{
 
 	private static final long serialVersionUID = 1L;
+	Logs log = new Logs();
 	
+	//FIPA Iterated Contract Net Protocol Setup
 	protected void setup() {
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
@@ -27,7 +30,8 @@ public class BuyerAgent extends Agent{
 		sequential.addSubBehaviour(parallel);
 		parallel.addSubBehaviour(new CustomContractNetResponder(this, template));
 	}
-
+	
+	//FIPA Iterated Contract Net Protocol Behaviour
 	private class CustomContractNetResponder extends SSResponderDispatcher {
 
 		private CustomContractNetResponder(Agent agent, MessageTemplate template) {
@@ -38,17 +42,19 @@ public class BuyerAgent extends Agent{
 			return new SSIteratedContractNetResponder(myAgent, message) {
 
 				protected ACLMessage handleCfp(ACLMessage cfp) {
-					System.out.println("BIDDER: " + getAID().getLocalName()+ " received CFP");
+					log.receiveCFP(getAID().getLocalName());
+					
 					boolean reservedpriceflag = true;
+					
+					//Get reserve price flag truthfull value
 					try {
 						reservedpriceflag = Boolean.parseBoolean((cfp.getContent().substring(cfp.getContent().lastIndexOf("|") + 1)));
 
 					} catch (Exception e) {
-						System.out.println("BIDDER: " + getAID().getLocalName() + " unable to read product price.");
-					}
-					//System.out.println(reservedpriceflag);
+						log.unableToReadProductPrice(getAID().getLocalName());
+					}					
 					
-					
+					//Reply to CFP
 					ACLMessage response = cfp.createReply();
 					
 					doWait(2000);
@@ -56,8 +62,10 @@ public class BuyerAgent extends Agent{
 					int  n = rand.nextInt(50) + 1;
 
 					if ((n & 1) == 0) { 
+						//Propose
 						response.setPerformative(ACLMessage.PROPOSE);
-
+						
+						//Generating bid
 						Random rand2 = new Random();
 						double randomValue;
 						if(reservedpriceflag){
@@ -67,19 +75,21 @@ public class BuyerAgent extends Agent{
 							randomValue = 4 + (10 - 4) * rand2.nextDouble();
 						}
 						String bid = String.format( "%.2f", randomValue);
-
-						System.out.println("BIDDER: " + getAgent().getLocalName() + " will bid " + bid);
+						
+						log.printBid(getAgent().getLocalName(), bid);
 
 						response.setContent(String.valueOf(bid)); 
 					} 
 					else { 
-						System.out.println("BIDDER: " + getAgent().getLocalName() + " decided not to bid on the product");
+						//Refuse
+						log.refuseToBid(getAgent().getLocalName());
 						response.setPerformative(ACLMessage.REFUSE);
 					}
 
 					return response;
 				}
 
+				//HandleProposal
 				protected ACLMessage handleAcceptProposal(ACLMessage msg, ACLMessage propose, ACLMessage accept) {
 					if (msg != null) {
 						String productName = null;
@@ -88,9 +98,8 @@ public class BuyerAgent extends Agent{
 							productName = accept.getContent().substring(0, accept.getContent().indexOf("|"));
 							cost = Double.parseDouble(accept.getContent().substring(accept.getContent().lastIndexOf("|") + 1));
 						} catch (Exception e) {}
-
-						System.out.println("Bidder Side: " + getAID().getLocalName() + " won the auction: \"" + productName + "\" from "
-								+ accept.getSender().getLocalName() + ", and will pay $" + cost + " to acquire it.");
+						
+						log.receiveAcceptance(getAID().getLocalName(), productName, productName, cost);
 						ACLMessage inform = accept.createReply();
 						inform.setPerformative(ACLMessage.INFORM);
 						return inform;
@@ -100,9 +109,10 @@ public class BuyerAgent extends Agent{
 						return failure;
 					}
 				}
-
+				
+				//HandleRejection
 				protected void handleRejectProposal(ACLMessage msg, ACLMessage propose, ACLMessage reject) {
-					System.out.println("Bidder Side: " + getAID().getLocalName() + " can't win auction because the value offered is lower than the reserved price!");
+					log.handleRejection(getAID().getLocalName());
 				}
 			};
 		}

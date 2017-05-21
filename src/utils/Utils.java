@@ -7,7 +7,7 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
-public class utils {
+public class Utils {
 	
 	public static int rounds = 0;
 	public static AgentController gui;

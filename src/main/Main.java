@@ -11,35 +11,42 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import utils.utils;
+import utils.Logs;
+import utils.Utils;
 
-public class main {
+public class Main {
+	
+	static Logs log = new Logs();
 	
 	public static void main(String[] args) throws StaleProxyException {
 		
-		/* Generate double values with 2 decimals places. The user must provide the min and max range that a bidder can bid.
-		Random r = new Random();
-		double randomValue = 5 + (15 - 5) * r.nextDouble();
-		System.out.println(String.format( "%.2f", randomValue));
-		*/
 		String num = new String();
 		String name = new String();
 		String price = new String();
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	    System.out.print("Enter number of bidders: ");
+	    log.enterNumberOfBids();
+	    
+	    //Reading the number of bidders that will participate in the auction
 	    try {
 			num = br.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	    System.out.print("Enter Product name: ");
+	    
+	    log.enterProductName();
+	    
+	    //Reading the name of the product in auction
 	    try {
 			name = br.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	    System.out.print("Enter Product Reserve Price: ");
+	    
+	    log.enterReservePrice();
+	    
+	    
+	    //Reading the reserve price of the product for auction
 	    try {
 			price = br.readLine();
 		} catch (IOException e) {
@@ -58,13 +65,15 @@ public class main {
 		auctioneerArgs[0]=name;
 		auctioneerArgs[1]=price;
 		
+		//Initiating the auction Bidders
 		for (int i = 0; i < totalBidders; i++){
 			auctioneerArgs[i+2] = "Bidder" + i;
 		}
 		
+		//Launching the auctioneer
 		mainContainer.createNewAgent("Auction", "agents.SellerAgent", auctioneerArgs).start();
 		
-
+		//Launching the bidders
 		for (int i = 0; i < totalBidders; i++){
 			Object[] bidderArgs = new Object[1];
 			bidderArgs[0] = "Bidder" + i;
@@ -72,7 +81,7 @@ public class main {
 			mainContainer.createNewAgent("Bidder" + i, "agents.BuyerAgent", bidderArgs).start();
 		}
 		
-		utils.gui = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", null);
-		utils.gui.start();
+		Utils.gui = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", null);
+		Utils.gui.start();
 	}
 }
