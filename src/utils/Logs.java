@@ -19,6 +19,14 @@ public class Logs {
 		System.out.print("Enter Product Reserve Price: ");
 	}
 	
+	public void enterMinPrice(){
+		System.out.print("Enter Minimum Bid Price: ");
+	}
+	
+	public void enterMaxPrice(){
+		System.out.print("Enter Maximum Bid Price: ");
+	}
+	
 	public void autionHeader(){
 		System.out.println(new String("GSP Auction Mechanism in Sales").toUpperCase());
 		System.out.println();

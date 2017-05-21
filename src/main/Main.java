@@ -23,6 +23,8 @@ public class Main {
 		String num = new String();
 		String name = new String();
 		String price = new String();
+		String min = new String();
+		String max = new String();
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	    log.enterNumberOfBids();
@@ -52,6 +54,24 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	    
+	    log.enterMinPrice();;
+	    
+	    //Reading the minimum bid price of the product in auction
+	    try {
+			min = br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	    
+	    log.enterMaxPrice();;
+	    
+	  //Reading the maximum bid price of the product in auction
+	    try {
+			max = br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		Runtime rt = Runtime.instance();
 		Profile p = new ProfileImpl();
@@ -75,8 +95,10 @@ public class Main {
 		
 		//Launching the bidders
 		for (int i = 0; i < totalBidders; i++){
-			Object[] bidderArgs = new Object[1];
+			Object[] bidderArgs = new Object[3];
 			bidderArgs[0] = "Bidder" + i;
+			bidderArgs[1] = min;
+			bidderArgs[2] = max;
 
 			mainContainer.createNewAgent("Bidder" + i, "agents.BuyerAgent", bidderArgs).start();
 		}

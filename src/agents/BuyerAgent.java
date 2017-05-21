@@ -17,9 +17,15 @@ public class BuyerAgent extends Agent{
 
 	private static final long serialVersionUID = 1L;
 	Logs log = new Logs();
+	Double min,max = (double) 0;
 	
 	//FIPA Iterated Contract Net Protocol Setup
 	protected void setup() {
+		
+		Object[] args = getArguments();
+		min = Double.parseDouble((String) args[1]);
+		max = Double.parseDouble((String) args[2]);
+		
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
 				MessageTemplate.MatchPerformative(ACLMessage.CFP));
@@ -69,10 +75,10 @@ public class BuyerAgent extends Agent{
 						Random rand2 = new Random();
 						double randomValue;
 						if(reservedpriceflag){
-							randomValue = 6 + (15 - 6) * rand2.nextDouble();
+							randomValue = (min*1.5) + ((max*1.5) - (min*1.5)) * rand2.nextDouble();
 						}
 						else{
-							randomValue = 4 + (10 - 4) * rand2.nextDouble();
+							randomValue = min + (max - min) * rand2.nextDouble();
 						}
 						String bid = String.format( "%.2f", randomValue);
 						
