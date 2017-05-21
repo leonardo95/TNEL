@@ -59,7 +59,13 @@ public class BuyerAgent extends Agent{
 						response.setPerformative(ACLMessage.PROPOSE);
 
 						Random rand2 = new Random();
-						double randomValue = 4 + (10 - 4) * rand2.nextDouble();
+						double randomValue;
+						if(reservedpriceflag){
+							randomValue = 6 + (15 - 6) * rand2.nextDouble();
+						}
+						else{
+							randomValue = 4 + (10 - 4) * rand2.nextDouble();
+						}
 						String bid = String.format( "%.2f", randomValue);
 
 						System.out.println("BIDDER: " + getAgent().getLocalName() + " will bid " + bid);

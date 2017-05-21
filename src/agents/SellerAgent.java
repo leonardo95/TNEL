@@ -181,7 +181,7 @@ public class SellerAgent extends Agent {
 				while(keySetIterator2.hasNext()){ 
 					AID key = keySetIterator2.next(); 
 					
-					System.out.println("key: " + key + " value: " + proposals.get(key)); 
+					System.out.println("Name: " + key.getLocalName() + " with value - " + proposals.get(key)); 
 				}
 				//System.out.println(reply);
 
@@ -213,7 +213,7 @@ public class SellerAgent extends Agent {
 					}
 
 					if(noOne)
-						System.out.println("AUCTIONEER: No obids for the product were made");
+						System.out.println("AUCTIONEER: No bids for the product were made");
 					else
 					{
 						System.out.println();
@@ -224,12 +224,12 @@ public class SellerAgent extends Agent {
 
 							if(highest2nd == 0)
 							{
-								System.out.println("The highest bid is: " + highest + " from " + winner + ". Since he is the only that bidded, he is going to pay " + highest);
+								System.out.println("The highest bid is: " + highest + " from " + winner.getLocalName() + ". Since he is the only that bidded, he is going to pay " + highest);
 								reply.setContent(productName + "|" + (Double) highest);
 							}
 							else
 							{
-								System.out.println("The highest bid is: " + highest + " from " + winner + ". The winner is going to pay the second biggest bid: " + highest2nd);
+								System.out.println("The highest bid is: " + highest + " from " + winner.getLocalName() + ". The winner is going to pay the second biggest bid: " + highest2nd);
 								reply.setContent(productName + "|" + (Double) highest2nd);
 							}
 
