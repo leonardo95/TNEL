@@ -56,7 +56,7 @@ public class Logs {
 	}
 	
 	public void handlePropose(String name, String content, String productName){
-		System.out.println("AUTIONEER: " + name  + " proposes " + content + "$ for the product: \"" + productName + "\".");
+		System.out.println("AUTIONEER: " + name  + " proposes " + content + "€ for the product: \"" + productName + "\".");
 	}
 	
 	public void handleRefuse(String name){
@@ -77,11 +77,11 @@ public class Logs {
 	}
 	
 	public void highestBid(String name, double highestProposal){
-		System.out.println("AUTIONEER: the bidder with the highest bid is "+ name + " with value " + highestProposal + "\n");
+		System.out.println("AUTIONEER: the bidder with the highest bid is "+ name + " with value " + highestProposal + "€.\n");
 	}
 	
 	public void proposalListing(String name, Double double1){
-		System.out.println("Name: " + name + " with value - " + double1); 
+		System.out.println("Name: " + name + " with value - " + double1 + "€."); 
 	}
 	
 	public void noBidsWereMade(){
@@ -90,10 +90,10 @@ public class Logs {
 	
 	public void winner(int type, double highest, String name, double highest2nd){
 		if(type==0){
-			System.out.println("The highest bid is: " + highest + " from " + name + ". Since he is the only that bidded, he is going to pay " + highest);
+			System.out.println("The highest bid is: " + highest + "€ from " + name + ". Since he is the only that bidded, he is going to pay " + highest + "€.");
 		}
 		else{
-			System.out.println("The highest bid is: " + highest + " from " + name + ". The winner is going to pay the second biggest bid: " + highest2nd);
+			System.out.println("The highest bid is: " + highest + "€ from " + name + ". The winner is going to pay the second biggest bid: " + highest2nd + "€.");
 		}
 	}
 	
@@ -103,7 +103,7 @@ public class Logs {
 	
 	public void proceedToNextRound(String name, String remainingbidders, double price){
 		System.out.println("The agents: " + remainingbidders + " are going to proceed to the next round. \n");
-		System.out.println(name + " is issuing CFP's with a reserved price of $" + price + ".\n");
+		System.out.println(name + " is handling CFP's with a reserved price of " + price + "€.\n");
 	}
 	
 	public void roundUpdate(int round){
@@ -120,7 +120,7 @@ public class Logs {
 	}
 	
 	public void printBid(String name, String bid){
-		System.out.println("BIDDER: " + name + " will bid " + bid);
+		System.out.println("BIDDER: " + name + " will bid " + bid + "€.");
 	}
 	
 	public void refuseToBid(String name){
@@ -128,7 +128,7 @@ public class Logs {
 	}
 	
 	public void receiveAcceptance(String name, String product, String sender, double cost){
-		System.out.println("BIDDER: " + name + " won the auction: \"" + product + "\" from "+ sender + ", and will pay $" + cost + " to acquire it.");
+		System.out.println("BIDDER: " + name + " won the auction for the product " +  product +  ", and will pay " + cost + "€ to acquire it.");
 	}
 	
 	public void handleRejection(String name){
