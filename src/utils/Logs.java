@@ -6,10 +6,6 @@ import jade.core.AID;
 
 //Logs used throughout the auction
 public class Logs {
-
-	public void enterNumberOfBids(){
-		System.out.print("Enter number of bidders: ");
-	}
 	
 	public void enterProductName(){
 		System.out.print("Enter Product name: ");
@@ -25,6 +21,14 @@ public class Logs {
 	
 	public void enterMaxPrice(){
 		System.out.print("Enter Maximum Bid Price: ");
+	}
+	
+	public void enterSoftBidders(){
+		System.out.print("Enter number of soft bidders: ");
+	}
+	
+	public void enterHardBidders(){
+		System.out.print("Enter number of hard bidders: ");
 	}
 	
 	public void autionHeader(){

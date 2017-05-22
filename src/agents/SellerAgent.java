@@ -23,7 +23,7 @@ import jade.wrapper.StaleProxyException;
 import utils.Logs;
 
 public class SellerAgent extends Agent {
-	
+
 	double productReservePrice;
 	double highestProposal = 0.0;
 	boolean reservePriceMet = false;
@@ -42,14 +42,14 @@ public class SellerAgent extends Agent {
 		Object[] args = getArguments();
 		productName = (String) args[0];
 		productReservePrice = Double.parseDouble((String) args[1]);
-		
+
 		if(args.length <= 2)
 			log.noBiddersInAuction();
 		else {
 			for (int i = 2; i < args.length; i++)
 				agents.add((String)args[i]);
 		}
-		
+
 		//FIPA Iterated Contract Net Protocol Behaviour
 		addBehaviour(new ContractNetInitiator(this, null) {
 			private int globalResponses = 0;
@@ -60,9 +60,9 @@ public class SellerAgent extends Agent {
 				Vector<ACLMessage> messages = new Vector<ACLMessage>();
 
 				doWait(3000);
-				
+
 				log.listBidders(agents);
-				
+
 				//Initiating the BDI Bidder Agents
 				for (int i = 0; i < agents.size(); i++) {
 					AID agent = new AID((String) agents.get(i), AID.ISLOCALNAME);
@@ -71,10 +71,10 @@ public class SellerAgent extends Agent {
 				}
 
 				doWait(2000);
-				
+
 				log.startingRound(utils.Utils.rounds);
 				log.sendingCFP();
-				
+
 				//Sending CFP
 				init.setProtocol(FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET);
 				init.setReplyByDate(new Date(System.currentTimeMillis() + 10000));
@@ -84,29 +84,29 @@ public class SellerAgent extends Agent {
 
 				return messages;
 			}
-			
+
 			//FIPA Iterated Contract Net Protocol HandlePropose
 			protected void handlePropose(ACLMessage propose, Vector v) {
 				log.handlePropose(propose.getSender().getLocalName(), propose.getContent(), productName);
 			}
-			
+
 			//FIPA Iterated Contract Net Protocol HandleRefuse
 			protected void handleRefuse(ACLMessage refuse) {
 				globalResponses++;
 				log.handleRefuse(refuse.getSender().getLocalName());
 			}
-			
+
 			//FIPA Iterated Contract Net Protocol HandleFaliure
 			protected void handleFailure(ACLMessage failure) {
 				globalResponses++;
 				log.handleFaliure(failure.getSender().getLocalName());
 			}
-			
+
 			//FIPA Iterated Contract Net Protocol HandleInform
 			protected void handleInform(ACLMessage inform) {
 				globalResponses++;
 				log.handleInform(getAID().getLocalName() );
-				
+
 				//Auction GUI Termination
 				try {
 					utils.Utils.gui.kill();
@@ -114,17 +114,17 @@ public class SellerAgent extends Agent {
 					e.printStackTrace();
 				}
 			}
-			
+
 			//FIPA Iterated Contract Net Protocol HandleAllResponses
 			protected void handleAllResponses(Vector responses, Vector acceptances) {
-		
+
 				int agentsLeft = responses.size() - globalResponses;
 				globalResponses = 0;
-				
+
 				log.handlingBids(getAID().getLocalName(), agentsLeft);
 
 				doWait(2000);
-				
+
 				//Proposals verification
 				Enumeration<?> t = responses.elements();
 				while (t.hasMoreElements()) {
@@ -146,14 +146,14 @@ public class SellerAgent extends Agent {
 						}
 					}
 				}
-				
+
 				//CFP for the new round
 				ACLMessage reply = new ACLMessage(ACLMessage.CFP);
 				Vector<ACLMessage> cfpVector = new Vector<ACLMessage>();
 				Vector<AID> biddersvec = new Vector<AID>();
 				Enumeration<?> e = responses.elements();
 				ArrayList<ACLMessage> responderList = new ArrayList<ACLMessage>();
-				
+
 				while (e.hasMoreElements()) {
 					ACLMessage msg = (ACLMessage) e.nextElement();
 
@@ -186,7 +186,7 @@ public class SellerAgent extends Agent {
 						}
 					}
 				}
-				
+
 				//Proposal Listing
 				Iterator<AID> keySetIterator2 = proposals.keySet().iterator(); 
 				while(keySetIterator2.hasNext()){ 
@@ -267,10 +267,10 @@ public class SellerAgent extends Agent {
 					log.proceedToNextRound(getAID().getLocalName(), remainingbidders, productReservePrice);
 					newIteration(cfpVector);
 					utils.Utils.rounds++;
-					
+
 					if(utils.Utils.rounds != 0)
 						log.roundUpdate(utils.Utils.rounds);
-					
+
 				}
 			}
 		});

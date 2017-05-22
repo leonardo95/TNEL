@@ -18,14 +18,14 @@ public class BuyerAgent extends Agent{
 	private static final long serialVersionUID = 1L;
 	Logs log = new Logs();
 	Double min,max = (double) 0;
-	
+
 	//FIPA Iterated Contract Net Protocol Setup
 	protected void setup() {
-		
+
 		Object[] args = getArguments();
 		min = Double.parseDouble((String) args[1]);
 		max = Double.parseDouble((String) args[2]);
-		
+
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
 				MessageTemplate.MatchPerformative(ACLMessage.CFP));
@@ -36,7 +36,7 @@ public class BuyerAgent extends Agent{
 		sequential.addSubBehaviour(parallel);
 		parallel.addSubBehaviour(new CustomContractNetResponder(this, template));
 	}
-	
+
 	//FIPA Iterated Contract Net Protocol Behaviour
 	private class CustomContractNetResponder extends SSResponderDispatcher {
 
@@ -49,9 +49,8 @@ public class BuyerAgent extends Agent{
 
 				protected ACLMessage handleCfp(ACLMessage cfp) {
 					log.receiveCFP(getAID().getLocalName());
-					
 					boolean reservedpriceflag = true;
-					
+
 					//Get reserve price flag truthfull value
 					try {
 						reservedpriceflag = Boolean.parseBoolean((cfp.getContent().substring(cfp.getContent().lastIndexOf("|") + 1)));
@@ -59,10 +58,10 @@ public class BuyerAgent extends Agent{
 					} catch (Exception e) {
 						log.unableToReadProductPrice(getAID().getLocalName());
 					}					
-					
+
 					//Reply to CFP
 					ACLMessage response = cfp.createReply();
-					
+
 					doWait(2000);
 					Random rand = new Random();
 					int  n = rand.nextInt(50) + 1;
@@ -70,18 +69,21 @@ public class BuyerAgent extends Agent{
 					if ((n & 1) == 0) { 
 						//Propose
 						response.setPerformative(ACLMessage.PROPOSE);
-						
+
 						//Generating bid
 						Random rand2 = new Random();
 						double randomValue;
 						if(reservedpriceflag){
-							randomValue = (min*1.5) + ((max*1.5) - (min*1.5)) * rand2.nextDouble();
+							if(getAID().getLocalName().substring(0,11) == "Hard_Bidder")
+								randomValue = (min*1.5) + ((max*1.5) - (min*1.5)) * rand2.nextDouble();
+							else
+								randomValue = (min) + ((max) - (min)) * rand2.nextDouble();
 						}
 						else{
 							randomValue = min + (max - min) * rand2.nextDouble();
 						}
 						String bid = String.format( "%.2f", randomValue);
-						
+
 						log.printBid(getAgent().getLocalName(), bid);
 
 						response.setContent(String.valueOf(bid)); 
@@ -104,7 +106,7 @@ public class BuyerAgent extends Agent{
 							productName = accept.getContent().substring(0, accept.getContent().indexOf("|"));
 							cost = Double.parseDouble(accept.getContent().substring(accept.getContent().lastIndexOf("|") + 1));
 						} catch (Exception e) {}
-						
+
 						log.receiveAcceptance(getAID().getLocalName(), productName, productName, cost);
 						ACLMessage inform = accept.createReply();
 						inform.setPerformative(ACLMessage.INFORM);
@@ -115,7 +117,7 @@ public class BuyerAgent extends Agent{
 						return failure;
 					}
 				}
-				
+
 				//HandleRejection
 				protected void handleRejectProposal(ACLMessage msg, ACLMessage propose, ACLMessage reject) {
 					log.handleRejection(getAID().getLocalName());
