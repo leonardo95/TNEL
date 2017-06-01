@@ -17,15 +17,16 @@ public class BuyerAgent extends Agent{
 
 	private static final long serialVersionUID = 1L;
 	Logs log = new Logs();
-	Double min,max = (double) 0;
-
+	Double min,max, bidDropPercentage  = (double) 0;
 	//FIPA Iterated Contract Net Protocol Setup
 	protected void setup() {
 
 		Object[] args = getArguments();
 		min = Double.parseDouble((String) args[1]);
 		max = Double.parseDouble((String) args[2]);
-
+		bidDropPercentage = (Double.parseDouble((String) args[3]))/100;
+		System.out.println("Bid drop is: " + bidDropPercentage);
+		
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
 				MessageTemplate.MatchPerformative(ACLMessage.CFP));
@@ -64,9 +65,13 @@ public class BuyerAgent extends Agent{
 
 					doWait(2000);
 					Random rand = new Random();
-					int  n = rand.nextInt(50) + 1;
+					int  n = rand.nextInt(10);
+					System.out.println("N is: " + n);
+					Double bidOffer = (double) n/10;
 
-					if ((n & 1) == 0) { 
+					System.out.println("BidOffer is: " + bidOffer);
+
+					if (bidOffer > bidDropPercentage ) { 
 						//Propose
 						response.setPerformative(ACLMessage.PROPOSE);
 
@@ -80,7 +85,10 @@ public class BuyerAgent extends Agent{
 								randomValue = (min) + ((max) - (min)) * rand2.nextDouble();
 						}
 						else{
-							randomValue = min + (max - min) * rand2.nextDouble();
+							if(getAID().getLocalName().substring(0,11) == "Hard_Bidder")
+								randomValue = (min*1.5) + ((max*1.5) - (min*1.5)) * rand2.nextDouble();
+							else
+								randomValue = min + (max - min) * rand2.nextDouble();
 						}
 						String bid = String.format( "%.2f", randomValue);
 

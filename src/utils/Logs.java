@@ -31,6 +31,10 @@ public class Logs {
 		System.out.print("Enter number of hard bidders: ");
 	}
 	
+	public void enterBidPercentage(){
+		System.out.print("Enter the bid drop percentage: ");
+	}
+	
 	public void autionHeader(){
 		System.out.println(new String("GSP Auction Mechanism in Sales").toUpperCase());
 		System.out.println();

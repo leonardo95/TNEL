@@ -81,7 +81,6 @@ public class SellerAgent extends Agent {
 				init.setContent(productName + "|" + reservePriceMet);
 
 				messages.addElement(init);
-
 				return messages;
 			}
 

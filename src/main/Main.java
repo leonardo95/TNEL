@@ -20,13 +20,13 @@ public class Main {
 
 	public static void main(String[] args) throws StaleProxyException {
 
-		//String num = new String();
 		String name = new String();
 		String price = new String();
 		String min = new String();
 		String max = new String();
 		int softBidders = Integer.MIN_VALUE;
 		int hardBidders =  Integer.MIN_VALUE;
+		String bidDropPercentage = new String();
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
@@ -83,6 +83,15 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		log.enterBidPercentage();
+		
+		//Reading the number of hard bidders in auction
+		try {
+			bidDropPercentage = br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		Runtime rt = Runtime.instance();
 		Profile p = new ProfileImpl();
@@ -111,23 +120,24 @@ public class Main {
 
 		//Launching the bidders
 		for (int i = 0; i < totalBidders; i++){
-			Object[] bidderArgs = new Object[3];
+			Object[] bidderArgs = new Object[4];
 
 			if(i < softBidders){
 				bidderArgs[0] = "Soft_Bidder" + i;
 				bidderArgs[1] = min;
 				bidderArgs[2] = max;
+				bidderArgs[3] = bidDropPercentage;
 				mainContainer.createNewAgent("Soft_Bidder" + i, "agents.BuyerAgent", bidderArgs).start();
 			}
 			else{
 				bidderArgs[0] = "Hard_Bidder" + i;
 				bidderArgs[1] = min;
 				bidderArgs[2] = max;
+				bidderArgs[3] = bidDropPercentage;
 				mainContainer.createNewAgent("Hard_Bidder" + i, "agents.BuyerAgent", bidderArgs).start();
 			}
 
 		}
-
 		Utils.gui = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", null);
 		Utils.gui.start();
 	}
