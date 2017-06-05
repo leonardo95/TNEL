@@ -45,7 +45,7 @@ public class Logs {
 	}
 	
 	public void listBidders(ArrayList<String> agents){
-		System.out.print("Auction founded with the following agents: ");
+		System.out.print("Auction found the following agents: ");
 		for (int i = 0; i < agents.size(); i++) {
 			System.out.print(agents.get(i).toString() + " ");
 		}
