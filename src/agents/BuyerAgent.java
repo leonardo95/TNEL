@@ -25,7 +25,6 @@ public class BuyerAgent extends Agent{
 		min = Double.parseDouble((String) args[1]);
 		max = Double.parseDouble((String) args[2]);
 		bidDropPercentage = (Double.parseDouble((String) args[3]))/100;
-		System.out.println("Bid drop is: " + bidDropPercentage);
 		
 		final String IP = FIPANames.InteractionProtocol.FIPA_ITERATED_CONTRACT_NET;
 		MessageTemplate template = MessageTemplate.and(MessageTemplate.MatchProtocol(IP),
@@ -66,10 +65,7 @@ public class BuyerAgent extends Agent{
 					doWait(2000);
 					Random rand = new Random();
 					int  n = rand.nextInt(10);
-					System.out.println("N is: " + n);
 					Double bidOffer = (double) n/10;
-
-					System.out.println("BidOffer is: " + bidOffer);
 
 					if (bidOffer > bidDropPercentage ) { 
 						//Propose
@@ -80,9 +76,9 @@ public class BuyerAgent extends Agent{
 						double randomValue;
 						if(reservedpriceflag){
 							if(getAID().getLocalName().substring(0,11) == "Hard_Bidder")
-								randomValue = (min*1.5) + ((max*1.5) - (min*1.5)) * rand2.nextDouble();
+								randomValue = (min*1.8) + ((max*1.8) - (min*1.8)) * rand2.nextDouble();
 							else
-								randomValue = (min) + ((max) - (min)) * rand2.nextDouble();
+								randomValue = (min*1.2) + ((max*1.2) - (min*1.2)) * rand2.nextDouble();
 						}
 						else{
 							if(getAID().getLocalName().substring(0,11) == "Hard_Bidder")
